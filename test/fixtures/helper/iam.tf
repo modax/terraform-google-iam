@@ -109,11 +109,25 @@ module "iam_binding_pubsub_topic" {
   bindings      = local.basic_bindings
 }
 
-module "audit_config" {
+module "project_audit_config" {
   source           = "../../../modules/audit_config"
-  project          = var.project_id
+  target_id        = module.base.folders[0]
   audit_log_config = local.audit_log_config
 }
+
+module "folder_audit_config" {
+  source           = "../../../modules/audit_config"
+  target_id        = var.folder_id
+  target_level     = "folder"
+  audit_log_config = local.audit_log_config
+}
+
+#module "org_audit_config" {
+#  source           = "../../../modules/audit_config"
+#  target_id        = var.org_id
+#  target_level     = "org"
+#  audit_log_config = local.audit_log_config
+#}
 
 module "iam_binding_secret_manager" {
   source   = "../../../modules/secret_manager_iam"

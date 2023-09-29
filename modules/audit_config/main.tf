@@ -22,8 +22,37 @@ locals {
 }
 
 resource "google_project_iam_audit_config" "project" {
-  for_each = local.audit_log_config
-  project  = var.project
+  for_each = var.target_level == "project" ? local.audit_log_config : {}
+  project  = var.target_id
+  service  = each.key
+
+  dynamic "audit_log_config" {
+    for_each = each.value
+    iterator = log_type
+    content {
+      log_type         = log_type.value.log_type
+      exempted_members = log_type.value.exempted_members
+    }
+  }
+}
+
+resource "google_folder_iam_audit_config" "folder" {
+  for_each = var.target_level == "folder" ? local.audit_log_config : {}
+  folder   = var.target_id
+  service  = each.key
+
+  dynamic "audit_log_config" {
+    for_each = each.value
+    iterator = log_type
+    content {
+      log_type         = log_type.value.log_type
+      exempted_members = log_type.value.exempted_members
+    }
+  }
+}
+resource "google_organization_iam_audit_config" "organization" {
+  for_each = var.target_level == "org" ? local.audit_log_config : {}
+  org_id   = var.target_id
   service  = each.key
 
   dynamic "audit_log_config" {

@@ -20,18 +20,20 @@ roles = attribute('roles').to_i
 project_id = attribute('project_id')
 
 # Resource pairs (arrays of length = 2)
-folders          = attribute('folders')
-subnets          = attribute('subnets')
-projects         = attribute('projects')
-service_accounts = attribute('service_accounts')
-buckets          = attribute('buckets')
-key_rings        = attribute('key_rings')
-keys             = attribute('keys')
-topics           = attribute('topics')
-subscriptions    = attribute('subscriptions')
-region           = attribute('region')
-audit_config     = attribute('audit_config')
-secrets          = attribute('secrets')
+folders              = attribute('folders')
+subnets              = attribute('subnets')
+projects             = attribute('projects')
+service_accounts     = attribute('service_accounts')
+buckets              = attribute('buckets')
+key_rings            = attribute('key_rings')
+keys                 = attribute('keys')
+topics               = attribute('topics')
+subscriptions        = attribute('subscriptions')
+region               = attribute('region')
+project_audit_config = attribute('project_audit_config')
+folder_audit_config  = attribute('folder_audit_config')
+#org_audit_config     = attribute('org_audit_config')
+secrets              = attribute('secrets')
 
 # Role pairs (arrays of length = 2)
 basic_roles               = attribute('basic_roles')
@@ -292,8 +294,8 @@ end
 
 # Audit config
 
-control 'audit-log-config' do
-  title 'Test if audit log config is correct'
+control 'project-audit-log-config' do
+  title 'Test if project audit log config is correct'
 
   describe command ("gcloud projects get-iam-policy #{project_id} --format='json(auditConfigs)'") do
     its(:exit_status) { should eq 0 }
@@ -313,7 +315,7 @@ control 'audit-log-config' do
     describe "check members email" do
       it "has correct exemptedMembers" do
         data["auditConfigs"].each do |config|
-          expect([audit_config[0][:exempted_members][0], audit_config[1][:exempted_members][0]]).to include(
+          expect([project_audit_config[0][:exempted_members][0], project_audit_config[1][:exempted_members][0]]).to include(
               config["auditLogConfigs"][0]["exemptedMembers"][0]
             )
           end
@@ -321,13 +323,13 @@ control 'audit-log-config' do
     end
     describe "check log type " do
       it "has correct log type" do
-        expect(data["auditConfigs"][0]["auditLogConfigs"][0]["logType"]).to eq audit_config[0][:log_type]
+        expect(data["auditConfigs"][0]["auditLogConfigs"][0]["logType"]).to eq project_audit_config[0][:log_type]
       end
     end
     describe "check services " do
       it "has correct Services" do
         data["auditConfigs"].each do |config|
-          expect([audit_config[0][:service],audit_config[1][:service]]).to include (
+          expect([project_audit_config[0][:service],project_audit_config[1][:service]]).to include (
             config["service"]
           )
         end
@@ -335,6 +337,94 @@ control 'audit-log-config' do
     end
   end
 end
+
+control 'folder-audit-log-config' do
+  title 'Test if folder audit log config is correct'
+
+  describe command ("gcloud resource-manager folders get-iam-policy #{folders[0]} --format='json(auditConfigs)'") do
+    its(:exit_status) { should eq 0 }
+    its(:stderr) { should eq '' }
+    let!(:data) do
+      if subject.exit_status == 0
+        JSON.parse(subject.stdout)
+      else
+        {}
+      end
+    end
+    describe "check auditConfigs count" do
+      it "has two auditConfigs" do
+        expect(data["auditConfigs"].length).to eq 2
+      end
+    end
+    describe "check members email" do
+      it "has correct exemptedMembers" do
+        data["auditConfigs"].each do |config|
+          expect([folder_audit_config[0][:exempted_members][0], folder_audit_config[1][:exempted_members][0]]).to include(
+              config["auditLogConfigs"][0]["exemptedMembers"][0]
+            )
+          end
+      end
+    end
+    describe "check log type " do
+      it "has correct log type" do
+        expect(data["auditConfigs"][0]["auditLogConfigs"][0]["logType"]).to eq folder_audit_config[0][:log_type]
+      end
+    end
+    describe "check services " do
+      it "has correct Services" do
+        data["auditConfigs"].each do |config|
+          expect([folder_audit_config[0][:service],folder_audit_config[1][:service]]).to include (
+            config["service"]
+          )
+        end
+      end
+    end
+  end
+end
+
+#control 'org-audit-log-config' do
+#  title 'Test if organization audit log config is correct'
+#
+#  describe command ("gcloud organizations get-iam-policy #{org_id} --format='json(auditConfigs)'") do
+#    its(:exit_status) { should eq 0 }
+#    its(:stderr) { should eq '' }
+#    let!(:data) do
+#      if subject.exit_status == 0
+#        JSON.parse(subject.stdout)
+#      else
+#        {}
+#      end
+#    end
+#    describe "check auditConfigs count" do
+#      it "has two auditConfigs" do
+#        expect(data["auditConfigs"].length).to eq 2
+#      end
+#    end
+#    describe "check members email" do
+#      it "has correct exemptedMembers" do
+#        data["auditConfigs"].each do |config|
+#          expect([org_audit_config[0][:exempted_members][0], org_audit_config[1][:exempted_members][0]]).to include(
+#              config["auditLogConfigs"][0]["exemptedMembers"][0]
+#            )
+#          end
+#      end
+#    end
+#    describe "check log type " do
+#      it "has correct log type" do
+#        expect(data["auditConfigs"][0]["auditLogConfigs"][0]["logType"]).to eq org_audit_config[0][:log_type]
+#      end
+#    end
+#    describe "check services " do
+#      it "has correct Services" do
+#        data["auditConfigs"].each do |config|
+#          expect([org_audit_config[0][:service],org_audit_config[1][:service]]).to include (
+#            config["service"]
+#          )
+#        end
+#      end
+#    end
+#  end
+#end
 
 # Secret Manager
 

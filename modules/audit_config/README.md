@@ -47,7 +47,8 @@ audit_log_config = [
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | audit\_log\_config | List of objects to be added to audit log config | `list(object({ service : string, log_type : string, exempted_members : list(string) }))` | n/a | yes |
-| project | Project to add the IAM policies/bindings | `string` | n/a | yes |
+| target\_id | Variable for project or or folder ID or organization ID (based on target\_level). | `string` | n/a | yes |
+| target\_level | String variable to denote if custom role being created is at project, folder or organization level. | `string` | `"project"` | no |
 
 ## Outputs
 

@@ -19,7 +19,13 @@ variable "audit_log_config" {
   type        = list(object({ service : string, log_type : string, exempted_members : list(string) }))
 }
 
-variable "project" {
-  description = "Project to add the IAM policies/bindings"
+variable "target_id" {
   type        = string
+  description = "Variable for project or or folder ID or organization ID (based on target_level)."
+}
+
+variable "target_level" {
+  type        = string
+  description = "String variable to denote if custom role being created is at project, folder or organization level."
+  default     = "project"
 }

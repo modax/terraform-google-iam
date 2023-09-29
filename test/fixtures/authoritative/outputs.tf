@@ -133,10 +133,20 @@ output "roles" {
   description = "Amount of roles assigned. Useful for testing how the module behaves on updates."
 }
 
-output "audit_config" {
-  value       = module.generic.audit_config
+output "project_audit_config" {
+  value       = module.generic.project_audit_config
   description = "Map of log type and exempted members to be addded to service"
 }
+
+output "folder_audit_config" {
+  value       = module.generic.folder_audit_config
+  description = "Map of log type and exempted members to be addded to service"
+}
+
+#output "org_audit_config" {
+#  value       = module.org_generic.org_audit_config
+#  description = "Map of log type and exempted members to be addded to service"
+#}
 
 output "secrets" {
   value       = module.generic.secrets
