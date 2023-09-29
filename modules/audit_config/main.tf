@@ -19,10 +19,12 @@ locals {
     for key, val in var.audit_log_config :
     val.service => val...
   }
+  project = (var.target_level == "project" || var.project != null || var.project != "" ?
+    coalesce(var.project, var.target_id) : null)
 }
 
 resource "google_project_iam_audit_config" "project" {
-  for_each = var.target_level == "project" ? local.audit_log_config : {}
+  for_each = local.project != null ? local.audit_log_config : {}
   project  = var.target_id
   service  = each.key
 
